@@ -11,6 +11,10 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 # Initialize OpenCV for capturing video
 cap = cv2.VideoCapture(0)
 
+# Set frame width and height (increase frame size)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)  # Set width to 1280 pixels
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  # Set height to 720 pixels
+
 # Function to determine if a hand is open or closed
 def is_hand_open(hand_landmarks):
     # Compare the tip of the fingers with their respective MCP joints
@@ -25,27 +29,9 @@ def is_hand_open(hand_landmarks):
 
     return sum(finger_open) >= 3  # At least 3 fingers should be open to consider it a raised hand
 
-# Function to find the closest face to a hand
-def find_closest_face(hand_landmarks, faces):
-    hand_x = hand_landmarks.landmark[0].x  # Hand center point
-    hand_y = hand_landmarks.landmark[0].y
-    closest_face = None
-    min_distance = float('inf')
-
-    for (x, y, w, h) in faces:
-        face_center_x = x + w / 2
-        face_center_y = y + h / 2
-        distance = (face_center_x - hand_x)**2 + (face_center_y - hand_y)**2
-
-        if distance < min_distance:
-            min_distance = distance
-            closest_face = (x, y, w, h)
-
-    return closest_face
-
 # Main loop for real-time hand and face detection
 with mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7, max_num_hands=4) as hands:
-    max_count=0
+    max_count = 0  # Initialize max count of hands raised
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -70,40 +56,29 @@ with mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7, m
         # Process the frame and detect hands
         result = hands.process(rgb_frame)
 
-        # To track how many people have raised only one hand
-        hands_per_face = {}  # Dictionary to track hands per face
+        # To track raised hands in real-time
+        raised_hand_count = 0
 
-        if result.multi_handedness and result.multi_hand_landmarks:
-            # Iterate through the detected hands
-            for idx, hand_landmarks in enumerate(result.multi_hand_landmarks):
-                # Check if the hand is open
+        # If hands are detected, check if they are open and draw landmarks
+        if result.multi_hand_landmarks:
+            for hand_landmarks in result.multi_hand_landmarks:
                 if is_hand_open(hand_landmarks):
-                    # Find the closest face to the detected hand
-                    closest_face = find_closest_face(hand_landmarks, faces)
+                    raised_hand_count += 1  # Increment count for each raised hand
+                    # Draw hand landmarks on the frame
+                    mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-                    if closest_face:
-                        face_key = tuple(closest_face)  # Use face coordinates as a unique identifier for a person
-                        
-                        # Track hands for each face
-                        if face_key not in hands_per_face:
-                            hands_per_face[face_key] = 1  # First hand detected for this face
-                        else:
-                            hands_per_face[face_key] += 1  # Second hand detected for this face
+        # Update max count if necessary
+        if raised_hand_count > max_count:
+            max_count = raised_hand_count
 
-                        # Draw hand landmarks on the frame
-                        mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-        # Count people who raised at least one hand
-        people_with_hand_raised = len(hands_per_face)
-        if people_with_hand_raised > max_count:
-            max_count=people_with_hand_raised 
-
-        # Display the count of people who raised at least one hand
-        cv2.putText(frame, f'People with Hand Raised: {people_with_hand_raised}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(frame, f'Max Count: {max_count}', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        # Display the current raised hand count, the maximum count, and the face count
+        face_count = len(faces)  # Count the number of detected faces
+        cv2.putText(frame, f'Current Hand Raised Count: {raised_hand_count}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
+        cv2.putText(frame, f'Max Hand Raised Count: {max_count}', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
+        cv2.putText(frame, f'Face Count: {face_count}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
 
         # Show the frame with hand landmarks and face detection
-        cv2.imshow('Real-Time Hand Detection with Face Tracking', frame)
+        cv2.imshow('Real-Time Hand and Face Detection', frame)
 
         # Break the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
