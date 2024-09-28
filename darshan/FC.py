@@ -40,5 +40,5 @@ def detect_and_mark_faces(image_path):
 # Example usage
 #image_path = 'SAM/image2.png' 
 #image_path = 'SAM/image2.png'
-image_path = 'SAM/image3.png' 
+image_path = 'Reva-Ideathon/darshan/src/image3.png' 
 detect_and_mark_faces(image_path)
