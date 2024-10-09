@@ -8,7 +8,7 @@ from PIL import Image
 st.title("YOLOv8 Hand Detection (No Bounding Boxes)")
 
 # Load the trained YOLO model
-model = YOLO('best.pt')
+model = YOLO('streamlit/best.pt')
 
 # File uploader to upload an image
 uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
