@@ -1,6 +1,5 @@
 # Import necessary libraries
 import streamlit as st
-import torch
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image
