@@ -31,7 +31,7 @@ def detect_and_mark_faces(image):
     return img_rgb, face_count
 
 # Streamlit app structure
-st.title("Face Detection App")
+st.title("Face Count App")
 st.write("Upload an image (JPEG, PNG, etc.) and click 'Count Faces' to detect faces.")
 
 # Image upload option
