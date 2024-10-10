@@ -31,17 +31,25 @@ def detect_and_mark_faces(image):
     return img_rgb, face_count
 
 # Streamlit app structure
-st.title("Face Count App")
-st.write("Upload an image (JPEG, PNG, etc.) and click 'Count Faces' to detect faces.")
+st.title("Face Count... App")
+st.write("Upload an image (JPEG, PNG, etc.) or capture an image using your camera and click 'Count Faces' to detect faces.")
 
-# Image upload option
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+# File upload option
+upload_option = st.radio("Select image input method:", ("Upload Image", "Use Camera"))
 
-# When an image is uploaded
+uploaded_file = None
+
+if upload_option == "Upload Image":
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+
+elif upload_option == "Use Camera":
+    uploaded_file = st.camera_input("Capture image using camera")
+
+# When an image is uploaded or captured
 if uploaded_file is not None:
-    # Convert the uploaded image to OpenCV format
+    # Convert the uploaded or captured image to OpenCV format
     image = np.array(Image.open(uploaded_file))
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption="Input Image", use_column_width=True)
 
     # Count button to trigger face detection
     if st.button("Count Faces"):
