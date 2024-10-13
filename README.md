@@ -3,5 +3,8 @@
 Use the following command
 >pip install -r requirements.txt
 
-test
+#Deployement 
 
+https://facecount.streamlit.app/
+
+https://reva-ideathon.streamlit.app/
