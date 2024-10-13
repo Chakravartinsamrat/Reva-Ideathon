@@ -3,7 +3,7 @@
 Use the following command
 >pip install -r requirements.txt
 
-#Deployement 
+#Deployment 
 
 https://facecount.streamlit.app/
 
